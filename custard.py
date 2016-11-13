@@ -14,29 +14,12 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-
-class Example(QtGui.QWidget):
+class MainWindow(QWidget):
     
     def __init__(self):
-        super(Example, self).__init__()
-        
+        super(MainWindow, self).__init__()
         self.initUI()
-
-        #clipboard = QtGui.QApplication.clipboard()
-        #clipboard.text(self, QClipboard.Clipboard)
-
-        #Create hookmanager
-        self.hookman = pyxhook.HookManager()
-        #Define our callback to fire when a key is pressed down
-        self.hookman.KeyDown = self.kbevent
-        #Hook the keyboard
-        self.hookman.HookKeyboard()
-        #Start our listener
-        self.hookman.start()
-
-        #Close the listener when we are done
-        self.hookman.cancel()
-        
+        self.thread = KeyListener()
         
     def initUI(self):
         self.setGeometry(300, 300, 250, 150)
@@ -44,6 +27,42 @@ class Example(QtGui.QWidget):
         self.setWindowIcon(QtGui.QIcon('web.png'))        
     
         self.show()
+        self.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),self,SLOT("changedSlot()"))
+
+    def closeEvent(self, evnt):
+        self.thread.stopListening()
+
+    @pyqtSlot()  
+    def changedSlot(self):
+        #print("change")
+        if(QApplication.clipboard().mimeData().hasText()):
+            QMessageBox.information(self,"ClipBoard Text Copy Detected!", "You Copied:"+QApplication.clipboard().text());   
+        
+
+#will need to multithread global key listener and clipboard chnage detection
+class KeyListener(QThread):
+
+    def __init__(self, parent = None):
+        QThread.__init__(self, parent)
+        self.exiting = False
+        self.size = QSize(0, 0)
+        self.stars = 0
+
+        #will need to multithread global key listener and clipboard chnage detection
+        #Create hookmanager
+        self.hookman = pyxhook.HookManager()
+
+        #Define our callback to fire when a key is pressed down
+        self.hookman.KeyDown = self.kbevent
+
+        #Hook the keyboard
+        self.hookman.HookKeyboard()
+
+        #Start our listener
+        self.hookman.start()
+
+        #Close the listener when we are done
+        #self.hookman.cancel()
 
     #This function is called every time a key is presssed
     def kbevent(self, event):
@@ -52,21 +71,17 @@ class Example(QtGui.QWidget):
         
         #If the ascii value matches spacebar, terminate the while loop
         if event.Ascii == 32:
-            self.hookman.cancel()
+            print("Space")
+            #self.hookman.cancel() 
 
-class ClipboardListener(QObject):   
-    @pyqtSlot()  
-    def changedSlot(self):
-        if(QApplication.clipboard().mimeData().hasText()):
-            QMessageBox.information(None,"ClipBoard Text Copy Detected!", "You Copied:"+QApplication.clipboard().text());      
-        
+    def stopListening(self):
+        print("stopping key listen thread")
+        self.hookman.cancel()
+
 def main():
     
     app = QtGui.QApplication(sys.argv)
-    #will need to multithread global key listener and clipboard chnage detection
-    ex = Example()
-    cl = ClipboardListener()
-    QObject.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),cl,SLOT("changedSlot()")) 
+    main_window = MainWindow()
     sys.exit(app.exec_())
 
 
