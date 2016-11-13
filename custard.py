@@ -63,6 +63,7 @@ class ClipboardListener(QObject):
 def main():
     
     app = QtGui.QApplication(sys.argv)
+    #will need to multithread global key listener and clipboard chnage detection
     ex = Example()
     cl = ClipboardListener()
     QObject.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),cl,SLOT("changedSlot()")) 
