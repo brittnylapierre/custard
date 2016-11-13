@@ -2,14 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-ZetCode PyQt5 tutorial 
-
-In this example, we create a simple
-window in PyQt5.
-
-author: Jan Bodnar
-website: zetcode.com 
-last edited: January 2015
+TODO : https://wiki.python.org/moin/PyQt/Threading,_Signals_and_Slots
 """
 
 import sys
