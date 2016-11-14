@@ -41,6 +41,11 @@ class MainWindow(QMainWindow): #QWidget
             self.hidden = True
         elif key == "space" and self.hidden == True: 
             self.show()
+            
+            #This sequence fixes a bug for debian systems
+            self.showMaximized()
+            self.showNormal()
+
             self.activateWindow()
             self.raise_()
             self.setFocus()
