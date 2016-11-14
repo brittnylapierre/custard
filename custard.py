@@ -21,6 +21,7 @@ class MainWindow(QMainWindow): #QWidget
         self.initUI()
         self.thread = KeyListener()
         self.connect(self.thread, self.thread.signal, self.handleKey)
+        self.clipboard_history = []
         
     def initUI(self):
         self.setGeometry(300, 300, 250, 150)
@@ -34,14 +35,14 @@ class MainWindow(QMainWindow): #QWidget
     def closeEvent(self, evnt):
         self.thread.stopListening()
 
-    def handleKey(self, key):
-        print(key)
-        if key == "space" and self.hidden == False:
+    def handleKey(self, command):
+        print(command)
+        if command == "copy" and self.hidden == False:
             self.hide()
             self.hidden = True
-        elif key == "space" and self.hidden == True: 
+        elif command == "copy" and self.hidden == True: 
             self.show()
-            
+
             #This sequence fixes a bug for debian systems
             self.showMaximized()
             self.showNormal()
@@ -55,8 +56,8 @@ class MainWindow(QMainWindow): #QWidget
     def changedSlot(self):
         #print("change")
         if(QApplication.clipboard().mimeData().hasText()):
-            QMessageBox.information(self,"ClipBoard Text Copy Detected!", "You Copied:"+QApplication.clipboard().text());
-
+            self.clipboard_history.insert(0, QApplication.clipboard().text()); #push
+            print(self.clipboard_history);
 
 #will need to multithread global key listener and clipboard chnage detection
 class KeyListener(QThread):
@@ -66,6 +67,7 @@ class KeyListener(QThread):
         self.exiting = False
         self.size = QSize(0, 0)
         self.signal = SIGNAL("signal")
+        self.key_combo = []
 
         #will need to multithread global key listener and clipboard chnage detection
         #Create hookmanager
@@ -89,8 +91,17 @@ class KeyListener(QThread):
         #print(event)
         
         #If the ascii value matches spacebar, terminate the while loop
-        if event.Ascii == 32:
-            self.emit(self.signal, "space"); 
+        #if event.Ascii == 32:
+        if len(self.key_combo) >= 2:
+            self. key_combo = []
+
+        self.key_combo.append(event.Ascii)
+        #print("Combo arr: ", self.key_combo)
+        if len(self.key_combo) == 2:
+            check_space = (self.key_combo[0] == 32 or self.key_combo[1] == 32)
+            check_ctrl = (self.key_combo[0] == 227 or self.key_combo[1] == 227)
+            if check_space and check_ctrl: 
+                self.emit(self.signal, "copy");
 
     def stopListening(self):
         print("stopping key listen thread")
