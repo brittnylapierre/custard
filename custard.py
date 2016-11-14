@@ -37,10 +37,10 @@ class MainWindow(QMainWindow): #QWidget
 
     def handleKey(self, command):
         print(command)
-        if command == "copy" and self.hidden == False:
+        if command == "toggle" and self.hidden == False:
             self.hide()
             self.hidden = True
-        elif command == "copy" and self.hidden == True: 
+        elif command == "toggle" and self.hidden == True: 
             self.show()
 
             #This sequence fixes a bug for debian systems
@@ -101,7 +101,7 @@ class KeyListener(QThread):
             check_space = (self.key_combo[0] == 32 or self.key_combo[1] == 32)
             check_ctrl = (self.key_combo[0] == 227 or self.key_combo[1] == 227)
             if check_space and check_ctrl: 
-                self.emit(self.signal, "copy");
+                self.emit(self.signal, "toggle");
 
     def stopListening(self):
         print("stopping key listen thread")
