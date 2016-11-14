@@ -98,9 +98,9 @@ class KeyListener(QThread):
         self.key_combo.append(event.Ascii)
         #print("Combo arr: ", self.key_combo)
         if len(self.key_combo) == 2:
-            check_space = (self.key_combo[0] == 32 or self.key_combo[1] == 32)
-            check_ctrl = (self.key_combo[0] == 227 or self.key_combo[1] == 227)
-            if check_space and check_ctrl: 
+            check_space = (self.key_combo[0] == 99 or self.key_combo[1] == 99)
+            check_alt = (self.key_combo[0] == 233 or self.key_combo[1] == 233)
+            if check_space and check_alt: 
                 self.emit(self.signal, "toggle");
 
     def stopListening(self):
