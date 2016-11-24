@@ -2,14 +2,17 @@
 # -*- coding: utf-8 -*-
 
 """
-TODO : https://wiki.python.org/moin/PyQt/Threading,_Signals_and_Slots
+
 """
 
 import sys
 import pyxhook
+import pyhook
+import pythoncom
 import time
+import os
+import platform
 
-import sys
 from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -69,31 +72,44 @@ class KeyListener(QThread):
         self.signal = SIGNAL("signal")
         self.key_combo = []
 
-        #will need to multithread global key listener and clipboard chnage detection
-        #Create hookmanager
-        self.hookman = pyxhook.HookManager()
+        #LINUX
+        platform_name = platform.system()
+        if platform_name == "Linux":
+            #will need to multithread global key listener and clipboard chnage detection
+            #Create hookmanager
+            self.hookman = pyxhook.HookManager()
 
-        #Define our callback to fire when a key is pressed down
-        self.hookman.KeyDown = self.kbevent
+            #Define our callback to fire when a key is pressed down
+            self.hookman.KeyDown = self.linuxkbevent
 
-        #Hook the keyboard
-        self.hookman.HookKeyboard()
+            #Hook the keyboard
+            self.hookman.HookKeyboard()
 
-        #Start our listener
-        self.hookman.start()
+            #Start our listener
+            self.hookman.start()
 
-        #Close the listener when we are done
-        #self.hookman.cancel()
+            #Close the listener when we are done
+            #self.hookman.cancel()
+        elif platform_name == "Windows":
+            # create a hook manager
+            self.hookman = pyHook.HookManager()
+            # watch for all mouse events
+            self.hookman.KeyDown = OnKeyboardEvent
+            # set the hook
+            self.hookman.HookKeyboard()
+            # wait forever
+            pythoncom.PumpMessages()
+
 
     #This function is called every time a key is presssed
-    def kbevent(self, event):
+    def linux_kbevent(self, event):
         #print key info
         #print(event)
         
         #If the ascii value matches spacebar, terminate the while loop
         #if event.Ascii == 32:
         if len(self.key_combo) >= 2:
-            self. key_combo = []
+            self.key_combo = []
 
         self.key_combo.append(event.Ascii)
         #print("Combo arr: ", self.key_combo)
@@ -102,6 +118,31 @@ class KeyListener(QThread):
             check_alt = (self.key_combo[0] == 233 or self.key_combo[1] == 233)
             if check_space and check_alt: 
                 self.emit(self.signal, "toggle");
+
+
+    #This function is called every time a key is presssed
+    def windows_kbevent(self, event):
+        #print key info
+        print(event)
+        
+        alt_pressed = HookManager.GetKeyState(HookConstants.VKeyToID('VK_MENU') >> 15)
+        if alt_pressed and HookConstant.IDToName(event.keyId) == 'c': 
+            self.emit(self.signal, "toggle"); 
+            return True
+        #If the ascii value matches spacebar, terminate the while loop
+        #if event.Ascii == 32:
+        #if len(self.key_combo) >= 2:
+        #    self. key_combo = []
+
+        #self.key_combo.append(event.Ascii)
+        #print("Combo arr: ", self.key_combo)
+        #if len(self.key_combo) == 2:
+        #    check_space = (self.key_combo[0] == 99 or self.key_combo[1] == 99)
+        #    check_alt = (self.key_combo[0] == 233 or self.key_combo[1] == 233)
+        #    if check_space and check_alt: 
+        #        self.emit(self.signal, "toggle");
+
+        
 
     def stopListening(self):
         print("stopping key listen thread")
