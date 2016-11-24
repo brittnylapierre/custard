@@ -133,7 +133,7 @@ class KeyListener(QThread):
         #print key info
         print(event)
         
-        alt_pressed = HookManager.GetKeyState(HookConstants.VKeyToID('VK_MENU') >> 15)
+        alt_pressed = self.hookman.GetKeyState(HookConstants.VKeyToID('VK_MENU') >> 15)
         if alt_pressed and HookConstant.IDToName(event.keyId) == 'c': 
             self.emit(self.signal, "toggle"); 
             return True
