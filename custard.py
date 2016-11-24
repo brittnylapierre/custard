@@ -105,8 +105,11 @@ class KeyListener(QThread):
             self.hookman.KeyDown = self.windows_kbevent
             # set the hook
             self.hookman.HookKeyboard()
+
+            #Start our listener
+            self.hookman.start()
             # wait forever
-            pythoncom.PumpMessages()
+            #pythoncom.PumpMessages()
 
 
     #This function is called every time a key is presssed
@@ -132,6 +135,16 @@ class KeyListener(QThread):
     def windows_kbevent(self, event):
         #print key info
         print(event.Ascii)
+        if len(self.key_combo) >= 2:
+            self.key_combo = []
+
+        self.key_combo.append(event.Ascii)
+        #print("Combo arr: ", self.key_combo)
+        if len(self.key_combo) == 2:
+            check_space = (self.key_combo[0] == 99 or self.key_combo[1] == 99)
+            check_alt = (self.key_combo[0] == 0 or self.key_combo[1] == 0)
+            if check_space and check_alt: 
+                self.emit(self.signal, "toggle");
         #If the ascii value matches spacebar, terminate the while loop
         #if event.Ascii == 32:
         #if len(self.key_combo) >= 2:
