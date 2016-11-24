@@ -88,7 +88,7 @@ class KeyListener(QThread):
             self.hookman = pyxhook.HookManager()
 
             #Define our callback to fire when a key is pressed down
-            self.hookman.KeyDown = self.linuxkbevent
+            self.hookman.KeyDown = self.linux_kbevent
 
             #Hook the keyboard
             self.hookman.HookKeyboard()
@@ -102,7 +102,7 @@ class KeyListener(QThread):
             # create a hook manager
             self.hookman = pyHook.HookManager()
             # watch for all mouse events
-            self.hookman.KeyDown = OnKeyboardEvent
+            self.hookman.KeyDown = self.windows_kbevent
             # set the hook
             self.hookman.HookKeyboard()
             # wait forever
