@@ -131,12 +131,7 @@ class KeyListener(QThread):
     #This function is called every time a key is presssed
     def windows_kbevent(self, event):
         #print key info
-        print(event)
-        
-        alt_pressed = self.hookman.GetKeyState(HookConstants.VKeyToID('VK_MENU') >> 15)
-        if alt_pressed and HookConstant.IDToName(event.keyId) == 'c': 
-            self.emit(self.signal, "toggle"); 
-            return True
+        print(event.Ascii)
         #If the ascii value matches spacebar, terminate the while loop
         #if event.Ascii == 32:
         #if len(self.key_combo) >= 2:
