@@ -105,11 +105,8 @@ class KeyListener(QThread):
             self.hookman.KeyDown = self.windows_kbevent
             # set the hook
             self.hookman.HookKeyboard()
-
-            #Start our listener
-            self.hookman.start()
             # wait forever
-            #pythoncom.PumpMessages()
+            pythoncom.PumpMessages()
 
 
     #This function is called every time a key is presssed
