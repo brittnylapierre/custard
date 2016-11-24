@@ -6,11 +6,16 @@
 """
 
 import sys
+
 try:
     import pyxhook
 except:
     print("Not on linux")
-import pyhook
+    try:
+        import pyHook
+    except:
+        print("install pyHook to run script")
+
 import pythoncom
 import time
 import os
