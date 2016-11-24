@@ -6,7 +6,10 @@
 """
 
 import sys
-import pyxhook
+try:
+    import pyxhook
+except:
+    print("Not on linux")
 import pyhook
 import pythoncom
 import time
