@@ -35,28 +35,7 @@ class MainWindow(QMainWindow): #QWidget
         self.set_toggle_on_code = -1
         self.set_toggle_off_code = -1
         self.toggle_code = -1
-        self.grid_layout    = QtGui.QGridLayout()
-        self.central_widget = QtGui.QWidget()
-        self.list_widget = ListWidget()
-
-        #Resize width and height
-        #self.list_widget.resize(300,120)
-
-        self.list_widget.addItem("Item 1"); 
-        self.list_widget.addItem("Item 2");
-        self.list_widget.addItem("Item 3");
-        self.list_widget.addItem("Item 4");
-
-        self.grid_layout.addWidget(self.list_widget,0,0)
-        #grid_layout.addWidget(QtGui.QPushButton("Button 2"),0,1)
-        #grid_layout.addWidget(QtGui.QPushButton("Button 3"),0,2)
-        #grid_layout.addWidget(QtGui.QPushButton("Button 4"),1,0)
-        #grid_layout.addWidget(QtGui.QPushButton("Button 5"),1,1)
-
-        self.setCentralWidget(self.central_widget)
-        self.central_widget.setLayout(self.grid_layout)
-
-        self.resize(200,200)
+        
         
     def initUI(self):
         self.setGeometry(300, 300, 250, 150)
@@ -64,6 +43,16 @@ class MainWindow(QMainWindow): #QWidget
         self.setWindowIcon(QtGui.QIcon('web.png'))        
         self.show()
         self.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),self,SLOT("changedSlot()"))
+        self.grid_layout    = QtGui.QGridLayout()
+        self.central_widget = QtGui.QWidget()
+        self.list_widget = ListWidget()
+
+        self.grid_layout.addWidget(self.list_widget,0,0)
+
+        self.setCentralWidget(self.central_widget)
+        self.central_widget.setLayout(self.grid_layout)
+
+        self.resize(400,400)
         self.hidden = False
 
     def closeEvent(self, evnt):
@@ -86,12 +75,27 @@ class MainWindow(QMainWindow): #QWidget
             self.setFocus()
             self.hidden = False
 
+    def keyPressEvent(self, event):
+        key = event.key()
+        print(event, "\nkey: ", key)
+
+        if key == Qt.Key_Return or key == Qt.Key_Enter:
+            #Copy to clipboard
+            QApplication.clipboard().setText(self.list_widget.currentItem().text())
+            print(self.list_widget.currentItem().text(), " copied to clipboard")
+
+            #Remove from list
+            matching_items = self.list_widget.findItems(self.list_widget.currentItem().text(), Qt.MatchExactly)
+            for item in matching_items:
+                self.list_widget.takeItem(self.list_widget.row(item))
+                print("removed", item.text())
+
     @pyqtSlot()
     def changedSlot(self):
         #print("change")
         if(QApplication.clipboard().mimeData().hasText()):
             clipboard_content = QApplication.clipboard().text()
-            #push to first index
+            #push to firs]]]t index
             self.clipboard_history.insert(0, clipboard_content); 
             print(self.clipboard_history);
 
@@ -103,10 +107,11 @@ class MainWindow(QMainWindow): #QWidget
 class ListWidget(QListWidget):
     def __init__(self):
         super(ListWidget, self).__init__()
-        self.currentItemChanged.connect(self.copyToClipboard)
+        #self.currentItemChanged.connect(self.copyToClipboard)
 
     def copyToClipboard(self, curr, prev):
         print('Selected: ', str(curr.text()))
+        QApplication.clipboard().setText(str(curr.text()))
 
 
 #will need to multithread global key listener and clipboard chnage detection
