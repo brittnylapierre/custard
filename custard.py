@@ -13,10 +13,9 @@ except:
     print("Not on linux")
     try:
         import pyHook
+        import pythoncom
     except:
-        print("install pyHook to run script")
-
-import pythoncom
+        print("install pyhook and pythoncom to run script")
 import time
 import os
 import platform
@@ -33,12 +32,36 @@ class MainWindow(QMainWindow): #QWidget
         self.thread = KeyListener()
         self.connect(self.thread, self.thread.signal, self.handleKey)
         self.clipboard_history = []
+        self.set_toggle_on_code = -1
+        self.set_toggle_off_code = -1
+        self.toggle_code = -1
+        self.grid_layout    = QtGui.QGridLayout()
+        self.central_widget = QtGui.QWidget()
+        self.list_widget = ListWidget()
+
+        #Resize width and height
+        #self.list_widget.resize(300,120)
+
+        self.list_widget.addItem("Item 1"); 
+        self.list_widget.addItem("Item 2");
+        self.list_widget.addItem("Item 3");
+        self.list_widget.addItem("Item 4");
+
+        self.grid_layout.addWidget(self.list_widget,0,0)
+        #grid_layout.addWidget(QtGui.QPushButton("Button 2"),0,1)
+        #grid_layout.addWidget(QtGui.QPushButton("Button 3"),0,2)
+        #grid_layout.addWidget(QtGui.QPushButton("Button 4"),1,0)
+        #grid_layout.addWidget(QtGui.QPushButton("Button 5"),1,1)
+
+        self.setCentralWidget(self.central_widget)
+        self.central_widget.setLayout(self.grid_layout)
+
+        self.resize(200,200)
         
     def initUI(self):
         self.setGeometry(300, 300, 250, 150)
         self.setWindowTitle('Icon')
         self.setWindowIcon(QtGui.QIcon('web.png'))        
-    
         self.show()
         self.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),self,SLOT("changedSlot()"))
         self.hidden = False
@@ -67,8 +90,24 @@ class MainWindow(QMainWindow): #QWidget
     def changedSlot(self):
         #print("change")
         if(QApplication.clipboard().mimeData().hasText()):
-            self.clipboard_history.insert(0, QApplication.clipboard().text()); #push
+            clipboard_content = QApplication.clipboard().text()
+            #push to first index
+            self.clipboard_history.insert(0, clipboard_content); 
             print(self.clipboard_history);
+
+            #add clipboard contents to list widget
+            self.list_widget.addItem(clipboard_content);
+
+
+#List widget that stores clipboard history text
+class ListWidget(QListWidget):
+    def __init__(self):
+        super(ListWidget, self).__init__()
+        self.currentItemChanged.connect(self.copyToClipboard)
+
+    def copyToClipboard(self, curr, prev):
+        print('Selected: ', str(curr.text()))
+
 
 #will need to multithread global key listener and clipboard chnage detection
 class KeyListener(QThread):
@@ -78,10 +117,11 @@ class KeyListener(QThread):
         self.exiting = False
         self.size = QSize(0, 0)
         self.signal = SIGNAL("signal")
-        self.key_combo = []
+        self.watching = True;
 
         #LINUX
         platform_name = platform.system()
+        print "You are using " + platform_name;
         if platform_name == "Linux":
             #will need to multithread global key listener and clipboard chnage detection
             #Create hookmanager
@@ -112,50 +152,25 @@ class KeyListener(QThread):
     #This function is called every time a key is presssed
     def linux_kbevent(self, event):
         #print key info
-        #print(event)
-        
-        #If the ascii value matches spacebar, terminate the while loop
-        #if event.Ascii == 32:
-        if len(self.key_combo) >= 2:
-            self.key_combo = []
+        print(event.Ascii)
+        #Disable watch for toggle on `
+        if event.Ascii == 126:
+            self.watching = False
 
-        self.key_combo.append(event.Ascii)
-        #print("Combo arr: ", self.key_combo)
-        if len(self.key_combo) == 2:
-            check_space = (self.key_combo[0] == 99 or self.key_combo[1] == 99)
-            check_alt = (self.key_combo[0] == 233 or self.key_combo[1] == 233)
-            if check_space and check_alt: 
-                self.emit(self.signal, "toggle");
+        #Enable watch for toggle on ~
+        if event.Ascii == 96:
+            self.watching = True
+
+        #toggle view on ]
+        if self.watching and event.Ascii == 93: 
+            self.emit(self.signal, "toggle");
+
 
 
     #This function is called every time a key is presssed
     def windows_kbevent(self, event):
-        #print key info
-        print(event.Ascii)
-        if len(self.key_combo) >= 2:
-            self.key_combo = []
-
-        self.key_combo.append(event.Ascii)
-        #print("Combo arr: ", self.key_combo)
-        if len(self.key_combo) == 2:
-            check_space = (self.key_combo[0] == 32 or self.key_combo[1] == 32)
-            check_alt = (self.key_combo[0] == 0 or self.key_combo[1] == 0)
-            if check_space and check_alt: 
-                self.emit(self.signal, "toggle");
-        #If the ascii value matches spacebar, terminate the while loop
-        #if event.Ascii == 32:
-        #if len(self.key_combo) >= 2:
-        #    self. key_combo = []
-
-        #self.key_combo.append(event.Ascii)
-        #print("Combo arr: ", self.key_combo)
-        #if len(self.key_combo) == 2:
-        #    check_space = (self.key_combo[0] == 99 or self.key_combo[1] == 99)
-        #    check_alt = (self.key_combo[0] == 233 or self.key_combo[1] == 233)
-        #    if check_space and check_alt: 
-        #        self.emit(self.signal, "toggle");
-
-        
+        #TO DO
+        print("to do")
 
     def stopListening(self):
         print("stopping key listen thread")
