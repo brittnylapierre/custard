@@ -3,6 +3,8 @@
 
 """
 
+This is a clipboard manager for Linux and Windows.
+
 """
 
 import sys
@@ -56,18 +58,21 @@ class MainWindow(QMainWindow): #QWidget
         self.grid_layout.addWidget(self.list_widget,0,0)
         self.setCentralWidget(self.central_widget)
         self.central_widget.setLayout(self.grid_layout)
-        self.resize(400,400)
+        self.resize(600,350)
         self.show()
         self.hidden = False
 
+
     def closeEvent(self, evnt):
         self.thread.stopListening()
+
 
     def handleKey(self, command):
         print(command)
         if command == "toggle" and self.hidden == False:
             self.hide()
             self.hidden = True
+            
         elif command == "toggle" and self.hidden == True: 
             self.show()
 
@@ -80,21 +85,40 @@ class MainWindow(QMainWindow): #QWidget
             self.setFocus()
             self.hidden = False
 
+
     def keyPressEvent(self, event):
         key = event.key()
         print(event, "\nkey: ", key)
+        
+        #Check for control modifier
+        if int(event.modifiers()) == Qt.ControlModifier:
+            #On x remove the curr selected item from item list and copy to clipboard via CUT
+            if key == Qt.Key_X:
+                #Copy to clipboard
+                QApplication.clipboard().setText(self.list_widget.currentItem().text())
+                print(self.list_widget.currentItem().text(), " removed from list and copied to clipboard")
 
-        #On enter or return remove the curr selected item from item list and copy to clipboard
-        if key == Qt.Key_Return or key == Qt.Key_Enter:
-            #Copy to clipboard
-            QApplication.clipboard().setText(self.list_widget.currentItem().text())
-            print(self.list_widget.currentItem().text(), " removed from list and copied to clipboard")
+                #Remove all from list 
+                matching_items = self.list_widget.findItems(self.list_widget.currentItem().text(), Qt.MatchExactly)
+                for item in matching_items:
+                    self.list_widget.takeItem(self.list_widget.row(item))
+                    #print("removed", item.text())
 
-            #Remove from list
-            matching_items = self.list_widget.findItems(self.list_widget.currentItem().text(), Qt.MatchExactly)
-            for item in matching_items:
-                self.list_widget.takeItem(self.list_widget.row(item))
-                #print("removed", item.text())
+            #TO DO: On c copy, don't remove from list
+            if key == Qt.Key_C:
+                #Copy to clipboard
+                QApplication.clipboard().setText(self.list_widget.currentItem().text())
+                print(self.list_widget.currentItem().text(), " removed from list and copied to clipboard")
+
+                #Remove newly added from list 
+                matching_items = self.list_widget.findItems(self.list_widget.currentItem().text(), Qt.MatchExactly)
+                i = 0
+                for item in matching_items:
+                    if i != 0:
+                        self.list_widget.takeItem(self.list_widget.row(item))
+                    i += 1
+                    #print("removed", item.text())
+
 
     @pyqtSlot()
     def changedSlot(self):
@@ -110,17 +134,19 @@ class MainWindow(QMainWindow): #QWidget
                 self.clipboard_history.insert(0, clipboard_content); 
                 #print(self.clipboard_history);
 
-                #add clipboard contents to list widget
-                self.list_widget.addItem(clipboard_content);
+                #add clipboard contents to top of list in list widget
+                self.list_widget.insertItem(0, clipboard_content);
             else: 
                 #TODO: make item first in list?
                 print("Selected text already in history.")
+
 
 
 #List widget that stores clipboard history text
 class ListWidget(QListWidget):
     def __init__(self):
         super(ListWidget, self).__init__()
+
 
 
 #Will need to multithread global key listener to toggle our program even when it doesnt have keyboard focus
@@ -182,18 +208,21 @@ class KeyListener(QThread):
             self.emit(self.signal, "toggle");
 
 
-
     #This function is called every time a key is presssed
     def windows_kbevent(self, event):
         #TO DO
         print("to do")
 
+
     def stopListening(self):
         print("stopping key listen thread")
         self.hookman.cancel()
 
+
     def notifyMain(self):
         self.emit(SIGNAL("output(QRect, QImage)"), QRect(x - self.outerRadius, y - self.outerRadius, self.outerRadius * 2, self.outerRadius * 2), image)
+
+
 
 def main():
     

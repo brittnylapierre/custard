@@ -1,0 +1,91 @@
+Project Report Guidelines
+--------------------------
+
+Size of report: 
+  Describing what you have done. Need to see and understand what we have done, use the number of pages required for that.
+  The structure of DNA had been described in one page. Typically between 15 to 25 pages. 
+
+  Describe what we have been able to accomplish.
+
+  Main thing is originality. If you want people to read your writing, it needs to be original. Draw own figures, write algorithms in your own words, etc. 
+
+~ Make diagram explaining code
+
+Talk about:
+  Stats before & After
+  - how the feature improves user experience vs not having it
+  - how much time our added feature saves
+  The Tool Itself
+  - convenience of controls within our feature
+  - compatible cross platform (Linux-Windows)
+  - ease of install and running
+  - ability to customize controls
+
+Sections:
+  Organize in two sections that are numbered.
+
+Title:
+  A good title that reflects specifically what we did. 
+
+Introduction:
+  Needs to be good because sometimes people only read this and the conclusion and references. 
+
+  What to put in the introductions:
+  Communication is based upon repetition. Repeat things at least twice in different ways to fully transfer understanding.
+  Reader must be put into context. What does the user need to understand the background of your topic? Don't go into too much detail though. Don't start with general statements because he does not like that, go directly to the point. The level of description should correspond to another student at our level but not on our team. Assume they know things we've been taught.
+
+  In CS we use acronyms a lot, make sure they're defined. Don't use them in titles. Write full words then put acronym in () on first mention.
+
+Style of text:
+  Not telling a story. Don't use future or past tense to talk about previous or upcoming sections. In conclusion can use past tense. Don't use complex sentences because the subject matter is complex enough. Write short sentences. 
+
+Problem Statement: 
+  Describe the problem, the situation where the science was before you started to work on this project. What is the exact problem that you have decided to address at the beginning of the term. Could be bigger than what you were able to accomplish. 
+
+  When describing your problem, it's good to explain why this problem is relevant in the context of this course. Why is it interesting? Talk about your motivation. The report is not about you though, it's about the problem and the software. Personal motivations go in an appendix. The motivation here discusses the motivation to address the problem.
+
+Results: 
+  What you actually achieved. List the features. Talk a little bit about the approach we used to solve the problem. What's our methodology? No more than half of a page. 
+
+Outline:
+  An overview of the upcoming sections. A brief one for each section starting from section 2. One or two sentences per section.
+
+Background information:
+  Describe things in your own way and cite the resources. Algorithms must be written in our own words. Citing sources might not be enough, sometimes you're don't have permission to use other people's stuff at all. Make your own diagrams and graphs. Try to be original! He likes seeing original works.
+
+  Don't talk about the software we're re implementing. We don't have to write negative statements on other software. Be positive about the works of others. There are bugs and deficiencies in all software. 
+
+  Cite PyQt4, pyHook, and pyxHook. Reference examples at end of template. latec(x?) is good at this. Cheerful style is better in his opinion. More than 2 authors 'et all.' after first author's family name. Cite the textbook if needed. Use own style if you need to describe things covered in class.
+
+The prof doesn't like quotations. What's important are the concepts, not the beauty of the words that people use to describe the concepts. 
+
+Result:
+  Is the core of the report. Everything previous prepares the reader for this section. If there is a figure, describe every element in the figure. Show the design of the code but not the code so use diagrams. Only short code snippets if anything, otherwise put it in appendix. You have to describe the code line by line as well. The code will be seen in the demo. UML Diagrams, sudo code, boxes... 
+
+  Make claims about your work, relative and non-relative. We need to show evidence, run tests, and collect statistics to back up any of the statements. We need to involve independent people. On Friday we can have other people try our software to collect feedback. 
+
+  Relative to other software, we need to do tests on both and compare. This is harder because you have to do more tests. If unable to support your claims, don't do it. Be honest with your results, maybe you didn't realize it was not easy to implement. 
+
+  Figures:
+    Disconnection between text and figure is bad, the figure is there to support the text. Your assumption should be that the reader is lazy. Explain your figure, and connect it to the text. Should write for blind people, if a person is blind they won't be missing anything by not being able to see the figure. Figures have a title, caption, and a sequential number. He prefers short captions. Refer to the figure explicitly in the text. 
+
+    A static demonstration, a cropped screen shot, is okay to include as a figure.
+
+Evaluation:
+  Is a self evaluation. Provide evidence about our claims here. 
+
+  Usability study:
+  - Pretest questionnaire, background information about the testers. 
+  - Explain the tasks the users have to do then get the user to explain it. Collect verbal comments during testing. Log the time it takes to do each task. 
+  - The post-test questionnaire rates the application on a scale of 1 to 10 on several aspects. Don't make it too long.
+
+  If you collect statistical data, you can present the average. Calculate the error as well. Aim for 90-95 confidence and collect data until you get it. 
+
+  A couple of pages but self critical. 
+
+Conclusion:
+  A half page summary of what we did. Explain why what we did was relevant. Talk about future work, what can be done in the future to extend our work. An explanation about what every team member did specifically. 
+
+Each writer needs to try and match the style of the other, at the end have a single editor that makes the styles the same. 
+
+Bring draft of report, even just table of content, and they will review it and give advice to us to make sure we have the best possible report.
