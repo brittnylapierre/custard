@@ -59,6 +59,35 @@ class MainWindow(QMainWindow): #QWidget
         self.setCentralWidget(self.central_widget)
         self.central_widget.setLayout(self.grid_layout)
         self.resize(600,350)
+
+        #Styling
+        self.stylesheet = """ /*Begin Stylesheet*/
+        QWidget {
+            background-color: #333333;
+        } 
+
+        QListWidget {
+            border: none;
+            background-color: #464646;
+            padding: 0;
+        } 
+
+        QListWidget::item {
+            color: white;
+            height: 24px;
+            padding: 10px;
+            background-color: #464646;
+            outline: 0;
+            border: none;
+        }
+
+        QListWidget::item::selected {
+            color: #00A8B2;
+            background-color: #404040;
+        }
+        """
+
+        self.setStyleSheet(self.stylesheet)
         self.show()
         self.hidden = False
 
@@ -112,6 +141,7 @@ class MainWindow(QMainWindow): #QWidget
 
                 #Remove newly added from list 
                 matching_items = self.list_widget.findItems(self.list_widget.currentItem().text(), Qt.MatchExactly)
+
                 i = 0
                 for item in matching_items:
                     if i != 0:
@@ -131,11 +161,12 @@ class MainWindow(QMainWindow): #QWidget
 
             if len(matching_items) == 0:
                 #push to first index
-                self.clipboard_history.insert(0, clipboard_content); 
+                #self.clipboard_history.insert(0, clipboard_content); 
                 #print(self.clipboard_history);
 
                 #add clipboard contents to top of list in list widget
-                self.list_widget.insertItem(0, clipboard_content);
+                item = QListWidgetItem(clipboard_content)
+                self.list_widget.insertItem(0, item);
             else: 
                 #TODO: make item first in list?
                 print("Selected text already in history.")
@@ -146,6 +177,8 @@ class MainWindow(QMainWindow): #QWidget
 class ListWidget(QListWidget):
     def __init__(self):
         super(ListWidget, self).__init__()
+        #self.stylesheet = """ """
+        #self.setStyleSheet(self.stylesheet)
 
 
 
