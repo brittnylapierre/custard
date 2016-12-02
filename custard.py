@@ -26,29 +26,26 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+
+
 class MainWindow(QMainWindow): #QWidget
     
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.initUI()
+        self.init_UI()
+
+        self.thread = None
+
+        #Signal for sending toggle codes change
+        self.signal = SIGNAL("signal")
 
         #Watch for changes in clipboard if change occurs run changeSlot function
-        self.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),self,SLOT("changedSlot()"))
-
-        #Create key listening thread for toggle view and attach signal for communicating to this main window
-        self.thread = KeyListener()
-        self.connect(self.thread, self.thread.signal, self.handleKey)
-        
-        #Default values
-        #TODO: find a way to set within gui then pass to key listen thread
-        self.set_toggle_on_code = -1
-        self.set_toggle_off_code = -1
-        self.toggle_code = -1
+        self.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),self,SLOT("changed_slot()"))
 
         self.clipboard_history = [] #might come in handy?
         
         
-    def initUI(self):
+    def init_UI(self):
         self.setGeometry(300, 300, 250, 150)
         self.setWindowTitle('Icon')
         self.setWindowIcon(QtGui.QIcon('web.png')) 
@@ -86,17 +83,24 @@ class MainWindow(QMainWindow): #QWidget
             background-color: #404040;
         }
         """
-
         self.setStyleSheet(self.stylesheet)
+
         self.show()
         self.hidden = False
 
 
-    def closeEvent(self, evnt):
-        self.thread.stopListening()
+    def set_worker_thread(self, thread):
+        #Create key listening thread for toggle view and attach signal for communicating to this main window
+        self.thread = thread
+        self.connect(self.thread, self.thread.signal, self.handle_key)
 
 
-    def handleKey(self, command):
+    def closeEvent(self, event):
+        print(self.thread)
+        self.thread.stop_listening()
+
+
+    def handle_key(self, command):
         print(command)
         if command == "toggle" and self.hidden == False:
             self.hide()
@@ -115,7 +119,7 @@ class MainWindow(QMainWindow): #QWidget
             self.hidden = False
 
 
-    def keyPressEvent(self, event):
+    def key_press_event(self, event):
         key = event.key()
         print(event, "\nkey: ", key)
         
@@ -151,7 +155,7 @@ class MainWindow(QMainWindow): #QWidget
 
 
     @pyqtSlot()
-    def changedSlot(self):
+    def changed_slot(self):
         if(QApplication.clipboard().mimeData().hasText()):
             clipboard_content = QApplication.clipboard().text()
             #Remove from list
@@ -160,16 +164,15 @@ class MainWindow(QMainWindow): #QWidget
             matching_items = self.list_widget.findItems(clipboard_content, Qt.MatchExactly)
 
             if len(matching_items) == 0:
-                #push to first index
-                #self.clipboard_history.insert(0, clipboard_content); 
-                #print(self.clipboard_history);
-
                 #add clipboard contents to top of list in list widget
                 item = QListWidgetItem(clipboard_content)
                 self.list_widget.insertItem(0, item);
             else: 
                 #TODO: make item first in list?
                 print("Selected text already in history.")
+
+    def change_toggle_var(self, toggle_event_name, ascii_code):
+        self.emit(self.signal, toggle_event_name, ascii_code);
 
 
 
@@ -190,7 +193,15 @@ class KeyListener(QThread):
         self.exiting = False
         self.size = QSize(0, 0)
         self.signal = SIGNAL("signal")
-        self.watching = True;
+        self.watching = True
+        print("parent: ", self.parent)
+
+        #Default values
+        #TODO: find a way to set within gui then pass to key listen thread
+        #TODO: in gui have disable all toggle functionalty button
+        self.set_toggle_on_code = 126 #`
+        self.set_toggle_off_code = 96 #~
+        self.toggle_code = 93 #]
 
         #LINUX
         platform_name = platform.system()
@@ -229,16 +240,26 @@ class KeyListener(QThread):
         #print(event.Ascii)
 
         #Disable watch for toggle on `
-        if event.Ascii == 126:
+        if event.Ascii == self.set_toggle_on_code:
             self.watching = False
 
         #Enable watch for toggle on ~
-        if event.Ascii == 96:
+        if event.Ascii == self.set_toggle_off_code:
             self.watching = True
 
         #toggle view on ]
-        if self.watching and event.Ascii == 93: 
+        if self.watching and event.Ascii == self.toggle_code: 
             self.emit(self.signal, "toggle");
+
+
+    def connect_to_main(self, main):
+        #Create key listening thread for toggle view and attach signal for communicating to this main window
+        self.main = main
+        self.connect(self.main, self.main.signal, self.change_toggle_event_value)
+
+
+    def change_toggle_event_value(self, toggle_event_name, ascii_code):
+        print('Toggle event name: ', toggle_event_name, " ascii: ", ascii_code)
 
 
     #This function is called every time a key is presssed
@@ -247,20 +268,28 @@ class KeyListener(QThread):
         print("to do")
 
 
-    def stopListening(self):
+    def stop_listening(self):
         print("stopping key listen thread")
         self.hookman.cancel()
 
 
-    def notifyMain(self):
-        self.emit(SIGNAL("output(QRect, QImage)"), QRect(x - self.outerRadius, y - self.outerRadius, self.outerRadius * 2, self.outerRadius * 2), image)
-
-
 
 def main():
-    
     app = QtGui.QApplication(sys.argv)
     main_window = MainWindow()
+
+    #Create key listening thread for toggle view 
+    key_thread = KeyListener()
+
+    #and attach signal for communicating to this main window
+    main_window.set_worker_thread(key_thread)
+
+    #Set signal for customizing toggle codes 
+    key_thread.connect_to_main(main_window)
+
+    #Test main window to worker thread connections
+    main_window.change_toggle_var("toggle on", 1234)
+
     sys.exit(app.exec_())
 
 
