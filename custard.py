@@ -27,7 +27,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 
-
 class MainWindow(QMainWindow): #QWidget
     
     def __init__(self):
@@ -67,6 +66,7 @@ class MainWindow(QMainWindow): #QWidget
             border: none;
             background-color: #464646;
             padding: 0;
+            outline: 0;
         } 
 
         QListWidget::item {
@@ -74,8 +74,6 @@ class MainWindow(QMainWindow): #QWidget
             height: 24px;
             padding: 10px;
             background-color: #464646;
-            outline: 0;
-            border: none;
         }
 
         QListWidget::item::selected {
@@ -185,7 +183,7 @@ class ListWidget(QListWidget):
 
 
 
-#Will need to multithread global key listener to toggle our program even when it doesnt have keyboard focus
+#Multithread global key listener to toggle our program even when it doesnt have keyboard focus
 class KeyListener(QThread):
 
     def __init__(self, parent = None):
