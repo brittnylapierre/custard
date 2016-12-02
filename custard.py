@@ -29,9 +29,9 @@ from PyQt4.QtGui import *
 
 class MainWindow(QMainWindow): #QWidget
     
-    def __init__(self):
+    def __init__(self, parent=None):
         super(MainWindow, self).__init__()
-        self.init_UI()
+        self.initUI()
 
         self.thread = None
 
@@ -39,26 +39,40 @@ class MainWindow(QMainWindow): #QWidget
         self.signal = SIGNAL("signal")
 
         #Watch for changes in clipboard if change occurs run changeSlot function
-        self.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),self,SLOT("changed_slot()"))
+        self.connect(QApplication.clipboard(),SIGNAL("dataChanged()"),self,SLOT("changedSlot()"))
 
         self.clipboard_history = [] #might come in handy?
         
         
-    def init_UI(self):
+    def initUI(self):
         self.setGeometry(300, 300, 250, 150)
-        self.setWindowTitle('Icon')
-        self.setWindowIcon(QtGui.QIcon('web.png')) 
-        self.grid_layout    = QtGui.QGridLayout()
-        self.central_widget = QtGui.QWidget()
+        self.setWindowTitle('Custard')
+        self.setWindowIcon(QtGui.QIcon(''))
+
         self.list_widget = ListWidget()
+
+        self.grid_layout = QtGui.QGridLayout()
+        self.central_widget = QtGui.QWidget()
         self.grid_layout.addWidget(self.list_widget,0,0)
         self.setCentralWidget(self.central_widget)
+        self.grid_layout.setMargin(0)
         self.central_widget.setLayout(self.grid_layout)
-        self.resize(600,350)
+
+        self.resize(400,200)
+
+        #Keeps it staying on top when not active window
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         #Styling
         self.stylesheet = """ /*Begin Stylesheet*/
+        QGridLayout {
+        }
+
         QWidget {
+        }
+
+        QMainWindow {
             background-color: #333333;
         } 
 
@@ -87,39 +101,44 @@ class MainWindow(QMainWindow): #QWidget
         self.hidden = False
 
 
-    def set_worker_thread(self, thread):
+    def setWorkerThread(self, thread):
         #Create key listening thread for toggle view and attach signal for communicating to this main window
         self.thread = thread
-        self.connect(self.thread, self.thread.signal, self.handle_key)
+        self.connect(self.thread, self.thread.signal, self.handleKey)
 
 
     def closeEvent(self, event):
         print(self.thread)
-        self.thread.stop_listening()
+        self.thread.stopListening()
 
 
-    def handle_key(self, command):
+    def handleKey(self, command):
         print(command)
         if command == "toggle" and self.hidden == False:
             self.hide()
+            print(self.isActiveWindow())
             self.hidden = True
             
-        elif command == "toggle" and self.hidden == True: 
+        elif command == "toggle" and self.hidden == True:
             self.show()
 
             #This sequence fixes a bug for debian systems
             self.showMaximized()
             self.showNormal()
 
-            self.activateWindow()
-            self.raise_()
-            self.setFocus()
+            # this will activate the window
+            self.window().raise_()
+            self.window().activateWindow()
+            self.window().setWindowState(Qt.WindowActive)
+            
+            self.window().setFocus()
+            print(self.window().isActiveWindow())
             self.hidden = False
 
 
-    def key_press_event(self, event):
+    def keyPressEvent(self, event):
         key = event.key()
-        print(event, "\nkey: ", key)
+        print(event, "\nkey!!!!!!!!!!!!: ", key)
         
         #Check for control modifier
         if int(event.modifiers()) == Qt.ControlModifier:
@@ -139,7 +158,7 @@ class MainWindow(QMainWindow): #QWidget
             if key == Qt.Key_C:
                 #Copy to clipboard
                 QApplication.clipboard().setText(self.list_widget.currentItem().text())
-                print(self.list_widget.currentItem().text(), " removed from list and copied to clipboard")
+                print(self.list_widget.currentItem().text(), "copied to clipboard")
 
                 #Remove newly added from list 
                 matching_items = self.list_widget.findItems(self.list_widget.currentItem().text(), Qt.MatchExactly)
@@ -153,7 +172,7 @@ class MainWindow(QMainWindow): #QWidget
 
 
     @pyqtSlot()
-    def changed_slot(self):
+    def changedSlot(self):
         if(QApplication.clipboard().mimeData().hasText()):
             clipboard_content = QApplication.clipboard().text()
             #Remove from list
@@ -169,7 +188,8 @@ class MainWindow(QMainWindow): #QWidget
                 #TODO: make item first in list?
                 print("Selected text already in history.")
 
-    def change_toggle_var(self, toggle_event_name, ascii_code):
+
+    def changeToggleVar(self, toggle_event_name, ascii_code):
         self.emit(self.signal, toggle_event_name, ascii_code);
 
 
@@ -178,8 +198,6 @@ class MainWindow(QMainWindow): #QWidget
 class ListWidget(QListWidget):
     def __init__(self):
         super(ListWidget, self).__init__()
-        #self.stylesheet = """ """
-        #self.setStyleSheet(self.stylesheet)
 
 
 
@@ -209,7 +227,7 @@ class KeyListener(QThread):
             self.hookman = pyxhook.HookManager()
 
             #Define our callback to fire when a key is pressed down
-            self.hookman.KeyDown = self.linux_kbevent
+            self.hookman.KeyDown = self.linuxKeyEvent
 
             #Hook the keyboard
             self.hookman.HookKeyboard()
@@ -225,7 +243,7 @@ class KeyListener(QThread):
             # create a hook manager
             self.hookman = pyHook.HookManager()
             # watch for all mouse events
-            self.hookman.KeyDown = self.windows_kbevent
+            self.hookman.KeyDown = self.windowsKeyEvent
             # set the hook
             self.hookman.HookKeyboard()
             # wait forever
@@ -233,7 +251,7 @@ class KeyListener(QThread):
 
 
     #This function is called every time a key is presssed
-    def linux_kbevent(self, event):
+    def linuxKeyEvent(self, event):
         #print key info
         #print(event.Ascii)
 
@@ -250,23 +268,23 @@ class KeyListener(QThread):
             self.emit(self.signal, "toggle");
 
 
-    def connect_to_main(self, main):
+    def connectToMain(self, main):
         #Create key listening thread for toggle view and attach signal for communicating to this main window
         self.main = main
-        self.connect(self.main, self.main.signal, self.change_toggle_event_value)
+        self.connect(self.main, self.main.signal, self.changeToggleEventValue)
 
 
-    def change_toggle_event_value(self, toggle_event_name, ascii_code):
+    def changeToggleEventValue(self, toggle_event_name, ascii_code):
         print('Toggle event name: ', toggle_event_name, " ascii: ", ascii_code)
 
 
     #This function is called every time a key is presssed
-    def windows_kbevent(self, event):
+    def windowsKeyEvent(self, event):
         #TO DO
         print("to do")
 
 
-    def stop_listening(self):
+    def stopListening(self):
         print("stopping key listen thread")
         self.hookman.cancel()
 
@@ -280,13 +298,13 @@ def main():
     key_thread = KeyListener()
 
     #and attach signal for communicating to this main window
-    main_window.set_worker_thread(key_thread)
+    main_window.setWorkerThread(key_thread)
 
     #Set signal for customizing toggle codes 
-    key_thread.connect_to_main(main_window)
+    key_thread.connectToMain(main_window)
 
     #Test main window to worker thread connections
-    main_window.change_toggle_var("toggle on", 1234)
+    main_window.changeToggleVar("toggle on", 1234)
 
     sys.exit(app.exec_())
 
