@@ -58,7 +58,7 @@ class MainWindow(QMainWindow): #QWidget
         self.grid_layout.setMargin(0)
         self.central_widget.setLayout(self.grid_layout)
 
-        self.resize(400,200)
+        self.resize(300,150)
 
         #Keeps it staying on top when not active window
         self.setFocusPolicy(Qt.StrongFocus)
@@ -66,10 +66,71 @@ class MainWindow(QMainWindow): #QWidget
 
         #Styling
         self.stylesheet = """ /*Begin Stylesheet*/
-        QGridLayout {
+
+        QScrollBar:vertical {
+            border: 2px solid #333333;
+            background-color: #333333;
+            opacity: 1.0;
+            width: 14px;
+            margin: 0px 0px 0px 0px;
+        }
+
+        QScrollBar::handle:vertical {
+            background-color: #5F5F5F;
+            border-radius: 5px;
+            width: 10px;
+        }
+
+        QScrollBar::sub-page:vertical {
+            background: #333333;
+        }
+
+        QScrollBar::add-page:vertical {
+            background: #333333;
+        }
+
+        QScrollBar:horizontal {
+            border: 2px solid #333333;
+            background-color: #333333;
+            opacity: 1.0;
+            height: 14px;
+            margin: 0px 0px 0px 0px;
+        }
+
+        QScrollBar::handle:horizontal {
+            background-color: #5F5F5F;
+            border-radius: 5px;
+            height: 10px;
+        }
+
+        QScrollBar::sub-page:horizontal {
+            background: #333333;
+        }
+
+        QScrollBar::add-page:horizontal {
+            background: #333333;
+        }
+
+        QScrollBar::add-line {
+            background: none;
+            height: 0px;
+            subcontrol-position: bottom;
+            subcontrol-origin: margin;
+        }
+
+        QScrollBar::sub-line {
+            background: none;
+            height: 0px;
+            subcontrol-position: top;
+            subcontrol-origin: margin;
         }
 
         QWidget {
+            background-color: #333333;
+        }
+
+        QGridLayout {
+            background-color: #333333;
         }
 
         QMainWindow {
@@ -88,6 +149,7 @@ class MainWindow(QMainWindow): #QWidget
             height: 24px;
             padding: 10px;
             background-color: #464646;
+            border-bottom: 1px dashed #5F5F5F;
         }
 
         QListWidget::item::selected {
