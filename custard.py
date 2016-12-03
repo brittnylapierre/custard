@@ -58,7 +58,16 @@ class MainWindow(QMainWindow): #QWidget
         self.grid_layout.setMargin(0)
         self.central_widget.setLayout(self.grid_layout)
 
-        self.resize(300,150)
+        #Menu
+        main_menu = self.menuBar()
+        toggle_settings_action = QtGui.QAction("&Toggle Settings", self)
+        toggle_settings_action.setShortcut("Ctrl+E")
+        toggle_settings_action.setStatusTip('Edit the keys used to toggle.')
+        toggle_settings_action.triggered.connect(self.openToggleSettings)
+        settings_menu = main_menu.addMenu('&Settings')
+        settings_menu.addAction(toggle_settings_action)
+
+        self.resize(400,150)
 
         #Keeps it staying on top when not active window
         self.setFocusPolicy(Qt.StrongFocus)
@@ -200,7 +209,7 @@ class MainWindow(QMainWindow): #QWidget
 
     def keyPressEvent(self, event):
         key = event.key()
-        print(event, "\nkey!!!!!!!!!!!!: ", key)
+        print(event, "\nkey:\n", key)
         
         #Check for control modifier
         if int(event.modifiers()) == Qt.ControlModifier:
@@ -250,6 +259,8 @@ class MainWindow(QMainWindow): #QWidget
                 #TODO: make item first in list?
                 print("Selected text already in history.")
 
+    def openToggleSettings(self):
+        print("toggle settings")
 
     def changeToggleVar(self, toggle_event_name, ascii_code):
         self.emit(self.signal, toggle_event_name, ascii_code);
@@ -373,4 +384,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
