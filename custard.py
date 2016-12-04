@@ -8,7 +8,7 @@ This is a clipboard manager for Linux and Windows.
 """
 
 import sys
-
+import re
 try:
     import pyxhook
 except:
@@ -32,6 +32,8 @@ class MainWindow(QMainWindow): #QWidget
     def __init__(self, parent=None):
         super(MainWindow, self).__init__()
         self.initUI()
+
+        self.pause_toggle = False
 
         self.thread = None
 
@@ -165,7 +167,9 @@ class MainWindow(QMainWindow): #QWidget
             color: #00A8B2;
             background-color: #404040;
         }
+
         """
+        
         self.setStyleSheet(self.stylesheet)
 
         self.show()
@@ -184,13 +188,14 @@ class MainWindow(QMainWindow): #QWidget
 
 
     def handleKey(self, command):
-        print(command)
-        if command == "toggle" and self.hidden == False:
+        if command == "toggle" and self.hidden == False and self.pause_toggle == False:
+            print(command)
             self.hide()
             print(self.isActiveWindow())
             self.hidden = True
             
-        elif command == "toggle" and self.hidden == True:
+        elif command == "toggle" and self.hidden == True and self.pause_toggle == False:
+            print(command)
             self.show()
 
             #This sequence fixes a bug for debian systems
@@ -259,11 +264,119 @@ class MainWindow(QMainWindow): #QWidget
                 #TODO: make item first in list?
                 print("Selected text already in history.")
 
+
     def openToggleSettings(self):
-        print("toggle settings")
+        print("toggle settings open")
+        self.pause_toggle = True
+
+        self.toggle_settings_widget = PopupMenuWidget()
+        self.connect(self.toggle_settings_widget, self.toggle_settings_widget.signal, self.handlePauseToggle)
+
+        #Keeps it above the main window
+        self.toggle_settings_widget.setFocusPolicy(Qt.StrongFocus)
+        self.toggle_settings_widget.setWindowFlags(Qt.WindowStaysOnTopHint)
+
+        self.mouse = QtGui.QCursor()
+        self.toggle_settings_widget.move(self.mouse.pos())
+        self.toggle_settings_widget.resize(300,200)
+        self.stylesheet = """ /* Start Style */
+            QWidget {
+                background-color: #464646;
+                color: white;
+            }
+
+            QTextEdit {
+                background-color: white;
+                color: black;
+                border: 1px solid black;
+            }
+
+            QScrollArea {
+                height:0px;
+                width:0px;
+            }
+            
+            QScrollBar:vertical {
+                height:0px;
+                width:0px;
+            }
+
+            QScrollBar:horizontal {
+                height:0px;
+                width:0px;
+            }
+
+            QPushButton {
+                background-color: #333333;
+            }
+
+        """
+
+        self.toggle_grid_layout = QtGui.QGridLayout()
+
+        #Add inputs
+        self.toggle_enabled_label = QLabel('Enable Toggle Key:')
+        self.toggle_grid_layout.addWidget(self.toggle_enabled_label,0,0)
+
+        self.toggle_enabled_input = QTextEdit();
+        self.toggle_enabled_input.setMaximumHeight(self.toggle_enabled_label.sizeHint().height())
+        self.toggle_grid_layout.addWidget(self.toggle_enabled_input,0,1)
+
+        self.toggle_disabled_label = QLabel('Disable Toggle Key:')
+        self.toggle_grid_layout.addWidget(self.toggle_disabled_label,1,0)
+
+        self.toggle_disabled_input = QTextEdit()
+        self.toggle_disabled_input.setMaximumHeight(self.toggle_disabled_label.sizeHint().height())
+        self.toggle_grid_layout.addWidget(self.toggle_disabled_input,1,1)
+
+        self.toggle_label = QLabel('Toggle Key:')
+        self.toggle_grid_layout.addWidget(self.toggle_label,2,0)
+
+        self.toggle_input = QTextEdit()
+        self.toggle_input.setMaximumHeight(self.toggle_label.sizeHint().height())
+        self.toggle_grid_layout.addWidget(self.toggle_input,2,1)
+
+        self.toggle_settings_button = QPushButton('Ok')
+        self.toggle_settings_button.clicked.connect(self.changeSettingsFromOnToggleMenu)
+        self.toggle_grid_layout.addWidget(self.toggle_settings_button,3,1)
+
+        self.toggle_settings_widget.setLayout(self.toggle_grid_layout);
+
+        #Change settings on button press
+
+        self.toggle_settings_widget.setStyleSheet(self.stylesheet)
+        self.toggle_settings_widget.show()
+
+
+    def changeSettingsFromOnToggleMenu(self):
+        print("widget ", self.toggle_settings_widget)
+        enable_code = self.toggle_enabled_input.toPlainText()
+        disable_code = self.toggle_disabled_input.toPlainText()
+        toggle_code = self.toggle_input.toPlainText()
+
+        if re.match('(\s+|$^)', enabled_code) == None:
+            self.changeToggleVar(toggle_event_name, ascii_code)
+
+        if re.match('(\s+|$^)', disabled_code) == None:
+            self.changeToggleVar(toggle_event_name, ascii_code)
+
+        if re.match('(\s+|$^)', toggle_code) == None:
+            self.changeToggleVar(toggle_event_name, ascii_code)
+
+
 
     def changeToggleVar(self, toggle_event_name, ascii_code):
         self.emit(self.signal, toggle_event_name, ascii_code);
+
+
+    def handlePauseToggle(self, data):
+        if self.pause_toggle == False:
+            self.pause_toggle = True
+            print("toggle paused")
+
+        elif self.pause_toggle == True:
+            self.pause_toggle = False
+            print("toggle unpaused")
 
 
 
@@ -272,6 +385,14 @@ class ListWidget(QListWidget):
     def __init__(self):
         super(ListWidget, self).__init__()
 
+
+class PopupMenuWidget(QWidget):
+    def __init__(self):
+        super(PopupMenuWidget, self).__init__()
+        self.signal = SIGNAL("signal")
+
+    def closeEvent(self, event):
+        self.emit(self.signal, "unpause toggle");
 
 
 #Multithread global key listener to toggle our program even when it doesnt have keyboard focus
@@ -288,8 +409,8 @@ class KeyListener(QThread):
         #Default values
         #TODO: find a way to set within gui then pass to key listen thread
         #TODO: in gui have disable all toggle functionalty button
-        self.set_toggle_on_code = 126 #`
-        self.set_toggle_off_code = 96 #~
+        self.set_toggle_enabled_code = 126 #`
+        self.set_toggle_disabled_code = 96 #~
         self.toggle_code = 93 #]
 
         #LINUX
@@ -329,11 +450,11 @@ class KeyListener(QThread):
         #print(event.Ascii)
 
         #Disable watch for toggle on `
-        if event.Ascii == self.set_toggle_on_code:
+        if event.Ascii == self.set_toggle_enabled_code:
             self.watching = False
 
         #Enable watch for toggle on ~
-        if event.Ascii == self.set_toggle_off_code:
+        if event.Ascii == self.set_toggle_disabled_code:
             self.watching = True
 
         #toggle view on ]
@@ -349,6 +470,14 @@ class KeyListener(QThread):
 
     def changeToggleEventValue(self, toggle_event_name, ascii_code):
         print('Toggle event name: ', toggle_event_name, " ascii: ", ascii_code)
+        if toggle_event_name == "":
+            self.set_toggle_enabled_code = ascii_code
+
+        if toggle_event_name == "":
+            self.set_toggle_disabled_code = ascii_code
+
+        if toggle_event_name == "":
+            self.set_toggle_code = ascii_code
 
 
     #This function is called every time a key is presssed
