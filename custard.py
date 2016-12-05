@@ -86,17 +86,17 @@ class MainWindow(QMainWindow): #QWidget
             margin: 0px 0px 0px 0px;
         }
 
-        QScrollBar::handle:vertical {
+        QScrollBar:handle:vertical {
             background-color: #5F5F5F;
             border-radius: 5px;
             width: 10px;
         }
 
-        QScrollBar::sub-page:vertical {
+        QScrollBar:sub-page:vertical {
             background: #333333;
         }
 
-        QScrollBar::add-page:vertical {
+        QScrollBar:add-page:vertical {
             background: #333333;
         }
 
@@ -108,21 +108,21 @@ class MainWindow(QMainWindow): #QWidget
             margin: 0px 0px 0px 0px;
         }
 
-        QScrollBar::handle:horizontal {
+        QScrollBar:handle:horizontal {
             background-color: #5F5F5F;
             border-radius: 5px;
             height: 10px;
         }
 
-        QScrollBar::sub-page:horizontal {
+        QScrollBar:sub-page:horizontal {
             background: #333333;
         }
 
-        QScrollBar::add-page:horizontal {
+        QScrollBar:add-page:horizontal {
             background: #333333;
         }
 
-        QScrollBar::add-line {
+        QScrollBar:add-line {
             background: none;
             height: 0px;
             subcontrol-position: bottom;
@@ -312,6 +312,10 @@ class MainWindow(QMainWindow): #QWidget
                 background-color: #333333;
             }
 
+            QPushButton:pressed {
+                background-color: #3E3E3E;
+            }
+
         """
 
         self.toggle_grid_layout = QtGui.QGridLayout()
@@ -369,6 +373,8 @@ class MainWindow(QMainWindow): #QWidget
             toggle_code = ord(toggle_text)
             self.changeToggleVar('toggle', toggle_code)
 
+        if self.toggle_settings_widget:
+            self.toggle_settings_widget.close()
 
 
     def changeToggleVar(self, toggle_event_name, ascii_code):
