@@ -449,7 +449,7 @@ class KeyListener(QThread):
             # create a hook manager
             self.hookman = pyHook.HookManager()
             # watch for all mouse events
-            self.hookman.KeyDown = self.windowsKeyEvent
+            self.hookman.KeyDown = self.linuxKeyEvent # see if works self.windowsKeyEvent
             # set the hook
             self.hookman.HookKeyboard()
             # wait forever
