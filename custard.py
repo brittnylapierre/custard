@@ -185,6 +185,8 @@ class MainWindow(QMainWindow): #QWidget
     def closeEvent(self, event):
         print(self.thread)
         self.thread.stopListening()
+        if self.toggle_settings_widget:
+            self.toggle_settings_widget.close()
 
 
     def handleKey(self, command):
@@ -350,18 +352,22 @@ class MainWindow(QMainWindow): #QWidget
 
     def changeSettingsFromOnToggleMenu(self):
         print("widget ", self.toggle_settings_widget)
-        enable_code = self.toggle_enabled_input.toPlainText()
-        disable_code = self.toggle_disabled_input.toPlainText()
-        toggle_code = self.toggle_input.toPlainText()
+        enable_text = str(self.toggle_enabled_input.toPlainText())
+        disable_text = str(self.toggle_disabled_input.toPlainText())
+        toggle_text = str(self.toggle_input.toPlainText())
+        print(enable_text, "\n", disable_text, "\n", toggle_text)
 
-        if re.match('(\s+|$^)', enabled_code) == None:
-            self.changeToggleVar(toggle_event_name, ascii_code)
+        if re.match('$^', enable_text) == None:
+            enable_code = ord(enable_text)
+            self.changeToggleVar('enabled', enable_code)
 
-        if re.match('(\s+|$^)', disabled_code) == None:
-            self.changeToggleVar(toggle_event_name, ascii_code)
+        if re.match('$^', disable_text) == None:
+            disable_code = ord(disable_text)
+            self.changeToggleVar('disabled', disable_code)
 
-        if re.match('(\s+|$^)', toggle_code) == None:
-            self.changeToggleVar(toggle_event_name, ascii_code)
+        if re.match('$^', toggle_text) == None:
+            toggle_code = ord(toggle_text)
+            self.changeToggleVar('toggle', toggle_code)
 
 
 
@@ -411,7 +417,7 @@ class KeyListener(QThread):
         #TODO: in gui have disable all toggle functionalty button
         self.set_toggle_enabled_code = 126 #`
         self.set_toggle_disabled_code = 96 #~
-        self.toggle_code = 93 #]
+        self.toggle_code = 9 #TAB #93 #]
 
         #LINUX
         platform_name = platform.system()
@@ -470,14 +476,14 @@ class KeyListener(QThread):
 
     def changeToggleEventValue(self, toggle_event_name, ascii_code):
         print('Toggle event name: ', toggle_event_name, " ascii: ", ascii_code)
-        if toggle_event_name == "":
+        if toggle_event_name == "enable":
             self.set_toggle_enabled_code = ascii_code
 
-        if toggle_event_name == "":
+        if toggle_event_name == "disable":
             self.set_toggle_disabled_code = ascii_code
 
-        if toggle_event_name == "":
-            self.set_toggle_code = ascii_code
+        if toggle_event_name == "toggle":
+            self.toggle_code = ascii_code
 
 
     #This function is called every time a key is presssed
