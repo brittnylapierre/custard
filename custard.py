@@ -36,6 +36,7 @@ class MainWindow(QMainWindow): #QWidget
         self.pause_toggle = False
 
         self.thread = None
+        self.toggle_settings_widget = None
 
         #Signal for sending toggle codes change
         self.signal = SIGNAL("signal")
@@ -180,13 +181,6 @@ class MainWindow(QMainWindow): #QWidget
         #Create key listening thread for toggle view and attach signal for communicating to this main window
         self.thread = thread
         self.connect(self.thread, self.thread.signal, self.handleKey)
-
-
-    def closeEvent(self, event):
-        print(self.thread)
-        self.thread.stopListening()
-        if self.toggle_settings_widget:
-            self.toggle_settings_widget.close()
 
 
     def handleKey(self, command):
@@ -391,6 +385,12 @@ class MainWindow(QMainWindow): #QWidget
             print("toggle unpaused")
 
 
+    def closeEvent(self, event):
+        print(self.thread)
+        self.thread.stopListening()
+        if self.toggle_settings_widget != None:
+            self.toggle_settings_widget.close()
+
 
 #List widget that stores clipboard history text
 class ListWidget(QListWidget):
@@ -453,13 +453,13 @@ class KeyListener(QThread):
             # set the hook
             self.hookman.HookKeyboard()
             # wait forever
-            pythoncom.PumpMessages()
+            #pythoncom.PumpMessages()
 
 
     #This function is called every time a key is presssed
     def linuxKeyEvent(self, event):
         #print key info
-        #print(event.Ascii)
+        print(event.Ascii)
 
         #Disable watch for toggle on `
         if event.Ascii == self.set_toggle_enabled_code:
@@ -500,7 +500,11 @@ class KeyListener(QThread):
 
     def stopListening(self):
         print("stopping key listen thread")
-        self.hookman.cancel()
+        #LINUX
+        platform_name = platform.system()
+        print "You are using " + platform_name;
+        if platform_name == "Linux":
+            self.hookman.cancel()
 
 
 
